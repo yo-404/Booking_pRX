@@ -12,6 +12,7 @@ import (
 	"github.com/yo-404/Booking_pRX/helpers"
 	"github.com/yo-404/Booking_pRX/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -65,6 +66,8 @@ func Signup() gin.HandlerFunc {
 
 	}
 
+func Signup() {
+  
 }
 
 func Login() {
@@ -95,4 +98,7 @@ func GetUser() gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, user)
 	}
+
+func GetUser() {
+
 }
