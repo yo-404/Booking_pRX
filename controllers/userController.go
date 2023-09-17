@@ -21,8 +21,12 @@ import (
 var userCollection *mongo.Collection = database.OpenCollection(database.Client, "user")
 var validate = validator.New()
 
-func HashPassword() {
-
+func HashPassword(password string) string {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if err != nil {
+		log.Panic(err)
+	}
+	return string(bytes)
 }
 
 func VerifyPassword(userPassword string, providedPassword string) (bool, string) {
@@ -113,6 +117,23 @@ func Login() gin.HandlerFunc {
 
 		passwordIsValid, msg := VerifyPassword(*user.Password, *foundUser.Password)
 		defer cancel()
+		if passwordIsValid != true {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			return
+		}
+
+		if foundUser.Email == nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "User not Found!"})
+		}
+		token, refreshToken, _ := helpers.GenerateAllTokens(*foundUser.Email, *foundUser.First_name, *foundUser.Last_name, *foundUser.User_type, *foundUser.User_id)
+		helpers.UpdateAllTokens(token, refreshToken, foundUser.User_id)
+		err = userCollection.FindOne(ctx, bson.M{"user_id": found.User_id}).Decode(&foundUser)
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, foundUser)
 	}
 }
 func GetUsers() {
