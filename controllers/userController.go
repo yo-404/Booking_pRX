@@ -139,7 +139,7 @@ func Login() gin.HandlerFunc {
 }
 func GetUsers() gin.HandlerFunc {
 	return func(c *gin.Context){
-		helpers.CheckUserType(c,"ADMIN"); err!=nil{
+	if err := helpers.CheckUserType(c,"ADMIN"); err!=nil{
 			c.JSON(http.StatusBadRequest,gin.H{"error":err.Error()})
 			return
 		}
@@ -171,14 +171,13 @@ func GetUsers() gin.HandlerFunc {
 	result,err := userCollection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, projectStage})
 		defer cancel()
 		if err!=nil{
-			c.JSON{http.StatusInternalServerError,gin.H{"error":"Error occured while listing user items"}}
+			c.JSON(http.StatusInternalServerError,gin.H{"error":"Error occured while listing user items"})
 		}
 		var allUsers []bson.M
 		if err = result.All(ctx,&allUsers) ; err!=nil{
 			log.Fatal(err)
 		}
 		c.JSON(http.StatusOK,allUsers[0])
-		
 	}
 
 }

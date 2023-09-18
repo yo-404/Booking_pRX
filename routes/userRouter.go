@@ -1,9 +1,9 @@
 package routes
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/yo-404/Booking_pRX/controllers"
 	"github.com/yo-404/Booking_pRX/middleware"
-	"github.gin-gonic/gin"
 )
 
 func UserRoutes(incomingRoutes *gin.Engine) {
