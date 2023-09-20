@@ -9,7 +9,9 @@ import (
 
 	// jwt "github.com/dgrijalva/jwt-go"
 	jwt "github.com/golang-jwt/jwt"
+
 	// "github.com/golang-jwt/jwt/v5"
+	// jwt "github.com/dgrijalva/jwt-go"
 	"github.com/yo-404/Booking_pRX/database"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -31,6 +33,9 @@ var userCollection *mongo.Collection = database.OpenCollection(database.Client, 
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
 func GenerateAllTokens(email string, firstName string, lastName string, userType string, uid string) (signedToken string, signedRefreshToken string, err error) {
+	nowTime := time.Now()
+	expireTime := nowTime.Add(12 * time.Hour)
+
 	claims := &SignedDetails{
 		Email:      email,
 		First_name: firstName,
@@ -38,7 +43,7 @@ func GenerateAllTokens(email string, firstName string, lastName string, userType
 		Uid:        uid,
 		User_type:  userType,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
+			ExpiresAt: jwt.NewNumericDate(expireTime),
 		},
 	}
 
@@ -86,7 +91,7 @@ func ValidateToken(signedToken string) (claims *SignedDetails, msg string) {
 }
 
 func UpdateAllTokens(signedToken string, signedRefreshToken string, userId string) {
-	var ctx, cancel = context.WithTimeout(Context.Background(), 100*time.Second)
+	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 
 	var updateObj primitive.D
 

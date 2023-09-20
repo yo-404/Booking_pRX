@@ -8,7 +8,7 @@ import (
 	"github.com/yo-404/Booking_pRX/helpers"
 )
 
-func Authenticate() *gin.HandlerFunc {
+func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		clientToken := c.Request.Header.Get("token")
 		if clientToken == "" {
@@ -19,7 +19,7 @@ func Authenticate() *gin.HandlerFunc {
 
 		claims, err := helpers.ValidateToken(clientToken)
 		if err != "" {
-			c.JSON(http.StatusInternalServerError, gin.h{"error": err})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 			c.Abort()
 			return
 		}
