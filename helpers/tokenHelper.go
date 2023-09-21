@@ -8,10 +8,10 @@ import (
 	"time"
 
 	// jwt "github.com/dgrijalva/jwt-go"
-	jwt "github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt"
 
 	// "github.com/golang-jwt/jwt/v5"
-	// jwt "github.com/dgrijalva/jwt-go"
+	// jwt "github.com/dgrijalva/jwts-go"
 	"github.com/yo-404/Booking_pRX/database"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -33,8 +33,6 @@ var userCollection *mongo.Collection = database.OpenCollection(database.Client, 
 var SECRET_KEY string = os.Getenv("SECRET_KEY")
 
 func GenerateAllTokens(email string, firstName string, lastName string, userType string, uid string) (signedToken string, signedRefreshToken string, err error) {
-	nowTime := time.Now()
-	expireTime := nowTime.Add(12 * time.Hour)
 
 	claims := &SignedDetails{
 		Email:      email,
@@ -43,7 +41,7 @@ func GenerateAllTokens(email string, firstName string, lastName string, userType
 		Uid:        uid,
 		User_type:  userType,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: jwt.NewNumericDate(expireTime),
+			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(24)).Unix(),
 		},
 	}
 
@@ -52,7 +50,7 @@ func GenerateAllTokens(email string, firstName string, lastName string, userType
 			ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(172)).Unix(),
 		},
 	}
-	token, err := jwt.NewWithClaims(jwt.SigningNethodHS256, claims).SignedString([]byte(SECRET_KEY))
+	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(SECRET_KEY))
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(SECRET_KEY))
 
 	if err != nil {
@@ -96,7 +94,7 @@ func UpdateAllTokens(signedToken string, signedRefreshToken string, userId strin
 	var updateObj primitive.D
 
 	updateObj = append(updateObj, bson.E{"token", signedToken})
-	updateObj = append(updateObj, bson.E{"refresh_token": signedRefreshToken})
+	updateObj = append(updateObj, bson.E{"refresh_token", signedRefreshToken})
 
 	Updated_at, _ := time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 	updateObj = append(updateObj, bson.E{"updated_at", Updated_at})
